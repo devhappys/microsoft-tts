@@ -4,9 +4,9 @@
 
 ### 部署到 Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwxxxcxx%2Fms-ra-forwarder&env=TOKEN&envDescription=%E8%AE%BF%E9%97%AE%E4%BB%A4%E7%89%8C&project-name=ms-ra-forwarder&repository-name=ms-ra-forwarder)
+部署时请删除原项目重新部署。
 
-~~请先 Fork 一份代码然后部署到自己的 Vercel 中 。参考 [演示视频](https://www.youtube.com/watch?v=vRC6umZp8hI)。~~
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwxxxcxx%2Fms-ra-forwarder&env=TOKEN&envDescription=%E8%AE%BF%E9%97%AE%E4%BB%A4%E7%89%8C&project-name=ms-ra-forwarder&repository-name=ms-ra-forwarder)
 
 
 ### 部署到 Railway
@@ -70,6 +70,8 @@ git clone https://github.com/wxxxcxx/ms-ra-forwarder.git
 cd ms-ra-forwarder
 # 安装依赖
 npm install 
+# 构建
+npm run build
 # 运行
 npm run start
 ```
@@ -78,34 +80,14 @@ npm run start
 
 ### 导入到阅读（legado）
 
-请访问你部署好的网站，在页面中测试没有问题后点击“生成阅读（legado）语音引擎链接”，然后在阅读（legado）中导入。
+请访问你部署好的网站，在页面中测试没有问题后点击“直接导入”，然后在阅读（legado）中导入。
 
 ### 手动调用
 
-接口地址为`api/ra`。格式为：
+接口地址为`/api/text-to-speech`。格式为：
 ```
-POST /api/ra
-FORMAT: audio-16khz-128kbitrate-mono-mp3
-Content-Type: text/plain
-
-<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
-  <voice name="zh-CN-XiaoxiaoNeural">
-    如果喜欢这个项目的话请点个 Star 吧。
-  </voice>
-</speak>
+GET /api/text-to-speech?voice=Microsoft+Server+Speech+Text+to+Speech+Voice+(zh-CN,+XiaoxiaoNeural)&volume=0&rate=0&pitch=0&text=你好
 ```
-
-#### 定制发音和音色
-请求的正文为 ssml 格式，支持定制发音人和讲话风格（目前仅 Azure 版本支持定制讲话风格），下面是相关的示例和文档：
-
-[文本转语音](https://azure.microsoft.com/zh-cn/services/cognitive-services/text-to-speech/#overview)
-
-[通过语音合成标记语言 (SSML) 改善合成](https://docs.microsoft.com/zh-cn/azure/cognitive-services/speech-service/speech-synthesis-markup?tabs=csharp)
-
-
-
-#### 音频格式
-默认的音频格式为 webm ，如果需要获取为其他格式的音频请修改请求头的 `FORMAT`（可用的选项可以在 [ra/index.ts](ra/index.ts#L5) 中查看）。
 
 ### 限制访问
 
@@ -123,7 +105,9 @@ Content-Type: text/plain
 
 ## 重要更改
 
-**2023-04-19：Azure 下线了演示页面的试用功能，导致 Azure 版接口无法使用了，请各位迁移到 Edge 浏览器的接口吧。** 
+**2025-08-20：使用NextJs重构项目，修复了无法合成的问题。部署时请删除原项目重新部署。**
+
+2023-04-19：Azure 下线了演示页面的试用功能，导致 Azure 版接口无法使用了，请各位迁移到 Edge 浏览器的接口吧。
 
 2022-11-18：添加词典文件支持，词典文件格式参考 https://github.com/wxxxcxx/azure-tts-lexicon-cn/blob/main/lexicon.xml 。
 

@@ -1,5 +1,5 @@
 # ─── 基础镜像：安装依赖 ─────────────────────────────────────────
-FROM node:24-alpine AS base
+FROM node:trixie-slim AS base
 
 # 设置工作目录
 WORKDIR /app
@@ -21,7 +21,7 @@ RUN cat package.json
 RUN npm run build
 
 # ─── 运行阶段：Standalone 输出 ────────────────────────────────────
-FROM node:24-alpine AS runner
+FROM node:trixie-slim AS runner
 
 WORKDIR /app
 
@@ -29,12 +29,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# 如果你需要 curl 或其他工具，可在此安装
-RUN apk add --no-cache curl
-
 # 拷贝构建产物
-# drizzle 目录（如果用了 Drizzle ORM standalone）
-COPY --from=builder /app/drizzle ./drizzle
 # public 静态资源
 COPY --from=builder /app/public ./public
 # standalone 输出目录（包含 server.js 和 package.json）

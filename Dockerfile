@@ -1,8 +1,8 @@
 # ─── 基础镜像：安装依赖 ─────────────────────────────────────────
 FROM node:trixie-slim AS base
 
-# 全局安装 yarn
-RUN npm install -g yarn
+# 启用 corepack 并准备 yarn
+RUN corepack enable && corepack prepare yarn@stable --activate
 
 # 设置工作目录
 WORKDIR /app

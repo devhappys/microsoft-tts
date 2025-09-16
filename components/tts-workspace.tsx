@@ -169,7 +169,7 @@ export default function TTSWorkspace({ ...props }: TTSWorkspaceProps) {
         }
         const apiUrl = `${protocol}://${host}/api/legado-import?${queryString}`
         return apiUrl
-    }, [form.getValues()])
+    }, [form, getToken])
 
     const legadoImportLink = useMemo(() => {
         return `legado://import/httpTTS?src=${encodeURIComponent(legadoApiLink)}`

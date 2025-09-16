@@ -9,6 +9,7 @@ import dayjs from "dayjs"
 import { CircleX, Download } from "lucide-react"
 import { HTMLAttributes } from "react"
 import { useTTSContext } from "./tts-context"
+import { HistoryRecord } from "@/app/hooks/history"
 
 export type TTSHistoryProps = Omit<HTMLAttributes<HTMLDivElement>, 'children'>
 
@@ -17,7 +18,7 @@ export default function TTSHistory({ ...props }: TTSHistoryProps) {
     const ttsContext = useTTSContext()
 
     // 下载历史记录音频文件
-    const downloadHistoryAudio = (record: any) => {
+    const downloadHistoryAudio = (record: HistoryRecord) => {
         try {
             const link = document.createElement('a')
             link.href = record.uri

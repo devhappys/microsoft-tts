@@ -16,13 +16,16 @@ RUN yarn install
 # ─── 构建阶段：Next.js 构建 ───────────────────────────────────────
 FROM base AS builder
 
-# 拷贝全部源码
-COPY . .
+# 拷贝源码（排除 node_modules 避免覆盖已安装的依赖）
+COPY app ./app
+COPY components ./components
+COPY public ./public
+COPY service ./service
+COPY *.ts *.tsx *.js *.mjs *.json ./
+COPY tailwind.config.ts postcss.config.mjs next.config.mjs ./
 
-RUN cat package.json
-
-# 执行 Next.js 构建（确保 package.json 中有 "build": "next build"）
-RUN yarn build
+# 执行 Next.js 构建
+RUN npm run build
 
 # ─── 运行阶段：Standalone 输出 ────────────────────────────────────
 FROM node:trixie-slim AS runner

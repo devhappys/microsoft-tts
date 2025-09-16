@@ -1,5 +1,9 @@
 import { EdgeTTSService } from "@/service/edge-tts-service"
 import { TTSOptions } from "@/service/tts-service"
+
+// Force this route to be dynamic since it uses request headers
+export const dynamic = 'force-dynamic'
+
 Error.stackTraceLimit = Infinity;
 export async function GET(request: Request) {
     try {

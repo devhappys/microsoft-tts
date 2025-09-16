@@ -73,7 +73,7 @@ npm install
 # 构建
 npm run build
 # 运行
-npm run start
+npm run dev
 ```
 
 ## 使用

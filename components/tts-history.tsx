@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/shadcn/ui/scroll-area"
 import { AudioPlayer } from "@/components/ui/audio-player"
 import clsx from "clsx"
 import dayjs from "dayjs"
-import { CircleX } from "lucide-react"
+import { CircleX, Download } from "lucide-react"
 import { HTMLAttributes } from "react"
 import { useTTSContext } from "./tts-context"
 
@@ -15,6 +15,30 @@ export type TTSHistoryProps = Omit<HTMLAttributes<HTMLDivElement>, 'children'>
 export default function TTSHistory({ ...props }: TTSHistoryProps) {
     const { toast } = useToast()
     const ttsContext = useTTSContext()
+
+    // 下载历史记录音频文件
+    const downloadHistoryAudio = (record: any) => {
+        try {
+            const link = document.createElement('a')
+            link.href = record.uri
+            link.download = `tts-${record.id.slice(0, 8)}-${Date.now()}.wav`
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            
+            toast({
+                title: '成功',
+                description: '音频文件已开始下载',
+            })
+        } catch (error) {
+            console.error('Download error:', error)
+            toast({
+                title: '错误',
+                description: '下载失败，请重试',
+                variant: 'destructive',
+            })
+        }
+    }
 
     return <div {...props} className={clsx('w-full max-w-full overflow-hidden', props.className)}>
         <ScrollArea className={clsx('size-full overflow-hidden')}>
@@ -36,22 +60,33 @@ export default function TTSHistory({ ...props }: TTSHistoryProps) {
                         </CardHeader>
                         <CardContent className={clsx('w-full max-w-full overflow-hidden space-y-4')}>
                             <AudioPlayer className={clsx('w-full max-w-full overflow-hidden')} src={record.uri}></AudioPlayer>
-                            <Button
-                                variant={'destructive'}
-                                size={'sm'}
-                                className="w-full"
-                                onClick={() => {
-                                    console.log(record.id)
-                                    ttsContext.removeHistoryRecord(record.id)
-                                    toast({
-                                        title: 'Success',
-                                        description: 'Remove history successfully',
-                                    })
-                                }}
-                            >
-                                <CircleX className="opacity-70" />
-                                删除
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant={'outline'}
+                                    size={'sm'}
+                                    className="flex-1"
+                                    onClick={() => downloadHistoryAudio(record)}
+                                >
+                                    <Download className="h-4 w-4" />
+                                    下载
+                                </Button>
+                                <Button
+                                    variant={'destructive'}
+                                    size={'sm'}
+                                    className="flex-1"
+                                    onClick={() => {
+                                        console.log(record.id)
+                                        ttsContext.removeHistoryRecord(record.id)
+                                        toast({
+                                            title: 'Success',
+                                            description: 'Remove history successfully',
+                                        })
+                                    }}
+                                >
+                                    <CircleX className="opacity-70" />
+                                    删除
+                                </Button>
+                            </div>
                         </CardContent>
                         <CardFooter className="w-full max-w-full mt-2 flex flex-col md:flex-row xl:flex-col justify-between gap-1 overflow-hidden">
                             <span className={clsx('text-[0.5rem] truncate flex-1 opacity-50 min-w-0')}>

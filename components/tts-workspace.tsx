@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import axios from "axios"
 import clsx from "clsx"
-import { Check, ChevronsUpDown, LoaderCircle, Smile, Speech, QrCode, Globe, Copy } from "lucide-react"
+import { Check, ChevronsUpDown, LoaderCircle, Smile, Speech, QrCode, Globe, Copy, Download } from "lucide-react"
 import { HTMLAttributes, useMemo, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { v4 as uuidv4 } from 'uuid'
@@ -43,6 +43,7 @@ export default function TTSWorkspace({ ...props }: TTSWorkspaceProps) {
     const [selectedLocale, setSelectedLocale] = useState<string>('')
     const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('')
     const [showQrDialog, setShowQrDialog] = useState(false)
+    const [downloadAudioUrl, setDownloadAudioUrl] = useState<string>('')
     const { getToken } = useAuth()
     const { saveHistoryRecord: save } = useTTSContext()
 
@@ -138,6 +139,9 @@ export default function TTSWorkspace({ ...props }: TTSWorkspaceProps) {
                 options: data.options,
                 uri: audioUri
             })
+            
+            // Store audio URI for download
+            setDownloadAudioUrl(audioUri)
         } catch (error) {
             console.error('onSubmit error', error)
             toast({
@@ -190,6 +194,39 @@ export default function TTSWorkspace({ ...props }: TTSWorkspaceProps) {
             toast({
                 title: '错误',
                 description: '生成二维码失败',
+                variant: 'destructive',
+            })
+        }
+    }
+
+    // 下载音频文件
+    const downloadAudio = () => {
+        if (!downloadAudioUrl) {
+            toast({
+                title: '提示',
+                description: '请先生成音频后再下载',
+                variant: 'destructive',
+            })
+            return
+        }
+
+        try {
+            const link = document.createElement('a')
+            link.href = downloadAudioUrl
+            link.download = `tts-audio-${Date.now()}.wav`
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            
+            toast({
+                title: '成功',
+                description: '音频文件已开始下载',
+            })
+        } catch (error) {
+            console.error('Download error:', error)
+            toast({
+                title: '错误',
+                description: '下载失败，请重试',
                 variant: 'destructive',
             })
         }
@@ -469,16 +506,28 @@ export default function TTSWorkspace({ ...props }: TTSWorkspaceProps) {
                         </div>
                         <div className={clsx('space-y-1')}></div>
                         <div className={clsx('space-y-3')}>
-                            <Button type="submit" className={clsx('w-full')} disabled={form.formState.isSubmitting}>
-                                {form.formState.isSubmitting ? (
-                                    <span className={clsx('flex justify-between items-center gap-1 text-sm opacity-50 truncate')}>
-                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                        <span className={clsx('ml-2')}>转换中...</span>
-                                    </span>
-                                ) : (
-                                    '转换'
-                                )}
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button type="submit" className={clsx('flex-1')} disabled={form.formState.isSubmitting}>
+                                    {form.formState.isSubmitting ? (
+                                        <span className={clsx('flex justify-between items-center gap-1 text-sm opacity-50 truncate')}>
+                                            <LoaderCircle className="h-4 w-4 animate-spin" />
+                                            <span className={clsx('ml-2')}>转换中...</span>
+                                        </span>
+                                    ) : (
+                                        '转换'
+                                    )}
+                                </Button>
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    className={clsx('px-3')}
+                                    disabled={!downloadAudioUrl}
+                                    onClick={downloadAudio}
+                                    title="下载音频文件"
+                                >
+                                    <Download className="h-4 w-4" />
+                                </Button>
+                            </div>
 
                             {/* 导入到阅读APP区域 */}
                             <div className="border rounded-lg p-4 space-y-3">

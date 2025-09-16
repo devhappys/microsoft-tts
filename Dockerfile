@@ -1,16 +1,17 @@
 # ─── 基础镜像：安装依赖 ─────────────────────────────────────────
 FROM node:trixie-slim AS base
 
-# 启用 corepack 并准备 yarn
-RUN corepack enable && corepack prepare yarn@stable --activate
+# 启用 corepack 并准备指定版本的 yarn
+RUN corepack enable && corepack prepare yarn@4.3.0 --activate
 
 # 设置工作目录
 WORKDIR /app
 
 # 安装依赖（production + dev）
 COPY package.json yarn.lock .yarnrc.yml ./
-# 使用 yarn install --immutable 保证锁文件一致性 (Yarn 2+)
-RUN yarn install --immutable
+COPY .yarn .yarn
+# 安装依赖包
+RUN yarn install
 
 # ─── 构建阶段：Next.js 构建 ───────────────────────────────────────
 FROM base AS builder

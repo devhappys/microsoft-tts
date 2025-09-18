@@ -102,8 +102,8 @@ export default function TTSWorkspace({ ...props }: TTSWorkspaceProps) {
         try {
             if (!data) {
                 toast({
-                    title: 'Error',
-                    description: 'Please select voice and locale',
+                    title: '错误',
+                    description: '请选择发音人和地区',
                     variant: 'destructive',
                 })
                 return
@@ -145,8 +145,8 @@ export default function TTSWorkspace({ ...props }: TTSWorkspaceProps) {
         } catch (error) {
             console.error('onSubmit error', error)
             toast({
-                title: 'Error',
-                description: 'Failed to generate audio',
+                title: '错误',
+                description: '音频生成失败',
                 variant: 'destructive',
             })
         }

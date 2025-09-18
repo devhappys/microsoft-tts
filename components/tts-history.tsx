@@ -26,7 +26,7 @@ export default function TTSHistory({ ...props }: TTSHistoryProps) {
             document.body.appendChild(link)
             link.click()
             document.body.removeChild(link)
-            
+
             toast({
                 title: '成功',
                 description: '音频文件已开始下载',
@@ -79,8 +79,8 @@ export default function TTSHistory({ ...props }: TTSHistoryProps) {
                                         console.log(record.id)
                                         ttsContext.removeHistoryRecord(record.id)
                                         toast({
-                                            title: 'Success',
-                                            description: 'Remove history successfully',
+                                            title: '成功',
+                                            description: '历史记录删除成功',
                                         })
                                     }}
                                 >

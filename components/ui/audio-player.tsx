@@ -57,8 +57,8 @@ const AudioPlayer = React.forwardRef<
                 } catch (error) {
                     console.error(error)
                     toast({
-                        title: 'Error',
-                        description: 'Failed to play audio',
+                        title: '错误',
+                        description: '音频播放失败',
                         variant: 'destructive'
                     })
                 }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface NotificationData {
@@ -243,8 +243,7 @@ const NotificationCard = React.memo(React.forwardRef<HTMLDivElement, Notificatio
         const initialProgress = Math.max(0, Math.min(100, 100 - (elapsed / duration) * 100));
         return initialProgress;
     });
-    const updateIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
-    const lastUpdateTimeRef = React.useRef<number>(Date.now());
+    // Refs removed - no longer needed as we use requestAnimationFrame
 
     // 启动进度条更新
     React.useEffect(() => {

@@ -15,7 +15,7 @@ interface LogContext {
     url?: string
     ip?: string
     userAgent?: string
-    [key: string]: any
+    [key: string]: string | number | boolean | undefined | unknown
 }
 
 class Logger {
@@ -82,7 +82,7 @@ class Logger {
     /**
      * Log API request details
      */
-    logRequest(request: Request, additionalContext?: Record<string, any>): string {
+    logRequest(request: Request, additionalContext?: Record<string, unknown>): string {
         const requestId = crypto.randomUUID()
         const url = new URL(request.url)
         
@@ -106,7 +106,7 @@ class Logger {
         requestId: string,
         status: number,
         duration: number,
-        additionalContext?: Record<string, any>
+        additionalContext?: Record<string, unknown>
     ): void {
         const context: LogContext = {
             requestId,
@@ -142,7 +142,7 @@ export const logger = new Logger()
 export async function withLogging<T>(
     request: Request,
     handler: (requestId: string) => Promise<T>,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
 ): Promise<T> {
     const requestId = logger.logRequest(request, context)
     const startTime = Date.now()

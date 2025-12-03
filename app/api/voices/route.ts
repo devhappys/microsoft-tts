@@ -33,7 +33,7 @@ function verifyBearerToken(request: Request): { authorized: boolean; error?: str
     return { authorized: true }
 }
 
-function jsonResponse(data: any, status: number = 200, additionalHeaders?: Record<string, string>): Response {
+function jsonResponse(data: unknown, status: number = 200, additionalHeaders?: Record<string, string>): Response {
     return new Response(JSON.stringify(data), {
         status,
         headers: {

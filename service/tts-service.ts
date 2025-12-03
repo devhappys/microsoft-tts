@@ -17,6 +17,9 @@ export const TTSOptionsSchema = z.object({
     rate: z.number().min(-100).max(100).default(0),
     pitch: z.number().min(-100).max(100).default(0),
     personality: z.string().optional(),
+    style: z.string().optional(),
+    styleDegree: z.number().min(0.01).max(2).optional(),
+    role: z.string().optional(),
 })
 
 export type TTSOptions = z.infer<typeof TTSOptionsSchema>

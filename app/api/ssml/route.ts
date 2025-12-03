@@ -1,9 +1,9 @@
 import { EdgeTTSService } from "@/service/edge-tts-service"
-import { TTSOptions } from "@/service/tts-service"
+import { SSML } from "@/service/ssml"
 import { applyRateLimit, ttsRateLimiter } from "../utils/rate-limiter"
 import { logger } from "../utils/logger"
 
-// Force this route to be dynamic since it uses request headers
+// Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
 Error.stackTraceLimit = Infinity
@@ -46,46 +46,14 @@ function jsonError(message: string, status: number = 400, additionalHeaders?: Re
     })
 }
 
-function parseNumberParam(
-    searchParams: URLSearchParams,
-    paramName: string,
-    defaultValue: number,
-    min: number,
-    max: number
-): number {
-    const paramValue = searchParams.get(paramName)
-
-    if (paramValue === null || paramValue === undefined) {
-        return defaultValue
-    }
-
-    const num = Number(paramValue)
-
-    if (Number.isNaN(num)) {
-        throw new Error(`Invalid ${paramName}: must be a number`)
-    }
-
-    if (num < min || num > max) {
-        throw new Error(`Invalid ${paramName}: must be between ${min} and ${max}`)
-    }
-
-    return num
-}
-
-function parseRequiredParam(searchParams: URLSearchParams, paramName: string): string {
-    const value = searchParams.get(paramName)
-
-    if (!value || value.trim() === '') {
-        throw new Error(`Missing required parameter: ${paramName}`)
-    }
-
-    return value
-}
-
 // ============ API Handler ============
 
-export async function GET(request: Request) {
-    const requestId = logger.logRequest(request, { endpoint: '/api/text-to-speech' })
+/**
+ * POST endpoint for SSML to Speech conversion
+ * Accepts raw SSML in request body
+ */
+export async function POST(request: Request) {
+    const requestId = logger.logRequest(request, { endpoint: '/api/ssml' })
     const startTime = Date.now()
 
     try {
@@ -94,7 +62,7 @@ export async function GET(request: Request) {
         if (!rateLimitResult.allowed) {
             logger.warn('Rate limit exceeded', {
                 requestId,
-                endpoint: '/api/text-to-speech',
+                endpoint: '/api/ssml',
             })
             return jsonError(
                 rateLimitResult.error || 'Rate limit exceeded',
@@ -108,67 +76,69 @@ export async function GET(request: Request) {
         if (!authResult.authorized) {
             logger.warn('Unauthorized access attempt', {
                 requestId,
-                endpoint: '/api/text-to-speech',
+                endpoint: '/api/ssml',
                 error: authResult.error,
             })
             return jsonError(authResult.error || 'Unauthorized', 401, rateLimitResult.headers)
         }
 
-        // Parse and validate parameters
-        const { searchParams } = new URL(request.url)
+        // Parse request body
+        const contentType = request.headers.get('content-type')
+        let ssml: string
 
-        const text = parseRequiredParam(searchParams, 'text')
-        const voice = parseRequiredParam(searchParams, 'voice')
-        const pitch = parseNumberParam(searchParams, 'pitch', 0, -100, 100)
-        const rate = parseNumberParam(searchParams, 'rate', 0, -100, 100)
-        const volume = parseNumberParam(searchParams, 'volume', 100, 0, 100)
-        const personality = searchParams.get('personality') || undefined
-        const style = searchParams.get('style') || undefined
-        const styleDegree = searchParams.get('styleDegree') ? parseFloat(searchParams.get('styleDegree')!) : undefined
-        const role = searchParams.get('role') || undefined
+        if (contentType?.includes('application/json')) {
+            // JSON format: { "ssml": "<speak>...</speak>" }
+            const body = await request.json()
+            ssml = body.ssml
 
-        logger.debug('TTS request parameters', {
+            if (!ssml) {
+                return jsonError('Missing ssml field in JSON body', 400, rateLimitResult.headers)
+            }
+        } else if (contentType?.includes('text/xml') || contentType?.includes('application/xml')) {
+            // Raw XML format
+            ssml = await request.text()
+        } else {
+            // Plain text format (assume SSML)
+            ssml = await request.text()
+        }
+
+        logger.debug('SSML request', {
             requestId,
-            textLength: text.length,
-            voice,
-            pitch,
-            rate,
-            volume,
-            personality,
-            style,
-            styleDegree,
-            role,
+            ssmlLength: ssml.length,
+            contentType,
         })
 
-        // Validate text length
-        if (text.length > 10000) {
-            logger.warn('Text too long', {
+        // Validate SSML format
+        if (!SSML.isSSML(ssml)) {
+            logger.warn('Invalid SSML format', {
                 requestId,
-                textLength: text.length,
-                maxLength: 10000,
+                ssmlPreview: ssml.substring(0, 100),
             })
-            return jsonError('Text too long (max 10000 characters)', 400, rateLimitResult.headers)
+            return jsonError(
+                'Invalid SSML format. Must start with <speak> and end with </speak>',
+                400,
+                rateLimitResult.headers
+            )
         }
 
-        // Convert text to speech
-        logger.info('Starting TTS conversion', { requestId, voice })
+        // Validate length
+        if (ssml.length > 50000) {
+            logger.warn('SSML too long', {
+                requestId,
+                ssmlLength: ssml.length,
+                maxLength: 50000,
+            })
+            return jsonError('SSML too long (max 50000 characters)', 400, rateLimitResult.headers)
+        }
+
+        // Convert SSML to speech
+        logger.info('Starting SSML conversion', { requestId })
         const service = new EdgeTTSService()
-        const options: TTSOptions = {
-            voice,
-            volume,
-            rate,
-            pitch,
-            personality,
-            style,
-            styleDegree,
-            role,
-        }
-
-        const speech = await service.convert(text, options)
+        const speech = await service.convertFromSSML(ssml)
         const audioBlob = new Blob([speech.audio], { type: 'audio/mpeg' })
 
         const duration = Date.now() - startTime
-        logger.info('TTS conversion successful', {
+        logger.info('SSML conversion successful', {
             requestId,
             audioSize: speech.audio.byteLength,
             duration: `${duration}ms`,
@@ -184,9 +154,9 @@ export async function GET(request: Request) {
         })
     } catch (error) {
         const duration = Date.now() - startTime
-        logger.error('Text-to-speech error', error, {
+        logger.error('SSML conversion error', error, {
             requestId,
-            endpoint: '/api/text-to-speech',
+            endpoint: '/api/ssml',
             duration: `${duration}ms`,
         })
 

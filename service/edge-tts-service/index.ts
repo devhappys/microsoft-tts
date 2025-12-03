@@ -8,9 +8,19 @@ import { getFirendlyPersonalityName } from './personality-map'
 export class EdgeTTSService implements TTSService {
 
     async convert(text: string, options: TTSOptions): Promise<Speech> {
-        const ssml = new SSML(text, options.voice, options.volume, options.rate, options.pitch)
+        const ssml = new SSML(text, options.voice, options.volume, options.rate, options.pitch, options.style, options.styleDegree, options.role)
         return await this.convertSSML(ssml.toString())
     }
+
+    /**
+     * Convert SSML directly to speech
+     * @param ssml - SSML string
+     * @returns Speech with audio and boundaries
+     */
+    async convertFromSSML(ssml: string): Promise<Speech> {
+        return await this.convertSSML(ssml)
+    }
+
     private async convertSSML(ssml: string): Promise<Speech> {
         const result = await EdgeTTSClient.convert(ssml, {
             format: "audio-24khz-96kbitrate-mono-mp3",

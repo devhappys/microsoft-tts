@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+.pnp
+.pnp.js
+
+# Next.js build output
+.next/
+out/
+
+# Development
+.git
+.gitignore
+.env*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github/
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Test
+coverage/
+.nyc_output/
+
+# Misc
+*.log
+.cache/

@@ -1,8 +1,11 @@
 # ─── 基础镜像：安装依赖 ─────────────────────────────────────────
-FROM node:trixie-slim AS base
+FROM node:23-slim AS base
 
-# 启用 corepack 并准备指定版本的 yarn
-RUN corepack enable && corepack prepare yarn@4.3.0 --activate
+# 安装 corepack（slim 镜像中默认未安装）
+# 并准备指定版本的 yarn
+RUN npm install -g corepack && \
+    corepack enable && \
+    corepack prepare yarn@4.3.0 --activate
 
 # 设置工作目录
 WORKDIR /app
@@ -28,7 +31,7 @@ COPY tailwind.config.ts postcss.config.mjs next.config.mjs ./
 RUN npm run build
 
 # ─── 运行阶段：Standalone 输出 ────────────────────────────────────
-FROM node:trixie-slim AS runner
+FROM node:23-slim AS runner
 
 WORKDIR /app
 
